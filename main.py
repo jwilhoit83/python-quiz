@@ -33,19 +33,16 @@ def parse_and_play(data):
     difficulty: dict[str: int] = {'easy': 1, 'medium': 2, 'hard': 3}
 
     for q in data:
-        question = q['question']['text']
-        answers = q['incorrectAnswers']
-        correct_answer = q['correctAnswer']
+        question: str = q['question']['text']
+        answers: list[str] = q['incorrectAnswers']
+        correct_answer: str = q['correctAnswer']
 
         answers.append(correct_answer)
         shuffle(answers)
 
+        answers_dict: dict[str: str] = {str(k): v for k, v in enumerate(answers, start=1)}
+
         points = difficulty[q['difficulty']]
-
-        answers_dict: dict[str: str] = {}
-
-        for k, v in enumerate(answers):
-            answers_dict[str(k + 1)] = v
 
         print(question + '\n')
 
