@@ -1,5 +1,31 @@
+from dataclasses import dataclass
+
 import requests as r
 from random import shuffle
+from colorama import Fore
+import time
+
+
+class Color:
+    @staticmethod
+    def print_green(string):
+        print(Fore.GREEN + string + Fore.RESET)
+
+    @staticmethod
+    def print_cyan(string):
+        print(Fore.CYAN + string + Fore.RESET)
+
+    @staticmethod
+    def print_yellow(string):
+        print(Fore.YELLOW + string + Fore.RESET)
+
+
+@dataclass
+class Question:
+    question: str = None
+    answers: dict[int: str] = None
+    correct_answer: str = None
+    points: int = None
 
 
 def get_data():
@@ -18,8 +44,8 @@ def get_data():
     for k, v in categories.items():
         print(f'{k}. {v.replace('_', ' ').title()}')
 
-    category: str = categories[int(input('Choose which category to play (1-10): '))]
-    limit: str = input('How many questions would you like to play? (1-25): ')
+    category: str = categories[int(input('\nChoose which category to play (1-10): '))]
+    limit: str = input('How many questions would you like to play? (1-50): ')
 
     url = f'https://the-trivia-api.com/v2/questions?limit={limit}&categories={category}'
 
@@ -27,47 +53,62 @@ def get_data():
     return request.json()
 
 
-def parse_and_play(data):
-    total_points: int = 0
-    possible_points: int = 0
+def parse_data(data, questions: list[Question]):
     difficulty: dict[str: int] = {'easy': 1, 'medium': 2, 'hard': 3}
 
     for q in data:
-        question: str = q['question']['text']
-        answers: list[str] = q['incorrectAnswers']
-        correct_answer: str = q['correctAnswer']
+        question: Question = Question()
+        question.question = q['question']['text']
+        question.correct_answer = q['correctAnswer']
 
-        answers.append(correct_answer)
+        answers: list[str] = q['incorrectAnswers']
+        answers.append(q['correctAnswer'])
         shuffle(answers)
 
-        answers_dict: dict[str: str] = {str(k): v for k, v in enumerate(answers, start=1)}
+        question.answers = {str(k): v for k, v in enumerate(answers, start=1)}
+        question.points = difficulty[q['difficulty']]
 
-        points = difficulty[q['difficulty']]
+        questions.append(question)
 
-        print(question + '\n')
 
-        for k, v in answers_dict.items():
+def play_quiz(questions: list[Question]):
+    total_points: int = 0
+    possible_points: int = 0
+
+    for q in questions:
+        print(q.question + '\n')
+
+        for k, v in q.answers.items():
             print(f'{k} - {v}')
 
         guess: str = input('\nYour guess is(1-4): ').strip()
 
-        if answers_dict[guess] == correct_answer:
-            total_points += points
-            print(f'\nCorrect for {points} points!')
+        if q.answers[guess] == q.correct_answer:
+            total_points += q.points
+            Color.print_cyan(f'\nCorrect for {q.points} points!\n')
         else:
-            print(f'\nIncorrect, the right answer was {correct_answer}')
+            Color.print_yellow(f'\nIncorrect, the right answer was {q.correct_answer}\n')
 
-        possible_points += points
+        possible_points += q.points
+        time.sleep(1)
 
     if total_points == possible_points:
-        print(f'\nPerfect score {str(total_points)} out of {str(possible_points)} possible points!')
+        Color.print_green(f'Perfect score {str(total_points)} out of {str(possible_points)} points!\n')
     else:
-        print(f'\nYou scored a total of {str(total_points)} points out of a possible {str(possible_points)}!')
+        Color.print_green(f'You scored a total of {str(total_points)} out of {str(possible_points)} points!\n')
 
     play_again: str = input('Would you like to play again?(y/n) ').lower().strip()
 
-    parse_and_play(get_data()) if play_again == 'y' else exit()
+    if play_again == 'y':
+        questions.clear()
+        parse_data(get_data(), questions)
+        play_quiz(questions)
+    else:
+        exit()
 
 
 if __name__ == '__main__':
-    parse_and_play(get_data())
+    questions_list: list[Question] = []
+
+    parse_data(get_data(), questions_list)
+    play_quiz(questions_list)
