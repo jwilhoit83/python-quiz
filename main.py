@@ -26,6 +26,16 @@ class Question:
     answers: dict[int: str] = None
     correct_answer: str = None
     points: int = None
+    
+def parse_input(prompt: str, lower: int, upper: int) -> int :
+    while True:
+        user_input = input(f'\n{prompt}')
+        if user_input.isdecimal() and int(user_input) in list(range(lower, upper + 1)):
+            return int(user_input)
+        else:
+            print('Please enter a valid choice.')
+            continue
+            
 
 
 def get_data():
@@ -44,8 +54,8 @@ def get_data():
     for k, v in categories.items():
         print(f'{k}. {v.replace('_', ' ').title()}')
 
-    category: str = categories[int(input('\nChoose which category to play (1-10): '))]
-    limit: str = input('How many questions would you like to play? (1-50): ')
+    category: str = categories[parse_input('\nChoose which category to play (1-10): ', 1, 10)]
+    limit: str = parse_input('How many questions would you like to play? (1-20): ', 1, 20)
 
     url = f'https://the-trivia-api.com/v2/questions?limit={limit}&categories={category}'
 
@@ -65,7 +75,7 @@ def parse_data(data, questions: list[Question]):
         answers.append(q['correctAnswer'])
         shuffle(answers)
 
-        question.answers = {str(k): v for k, v in enumerate(answers, start=1)}
+        question.answers = {k: v for k, v in enumerate(answers, start=1)}
         question.points = difficulty[q['difficulty']]
 
         questions.append(question)
@@ -81,7 +91,7 @@ def play_quiz(questions: list[Question]):
         for k, v in q.answers.items():
             print(f'{k} - {v}')
 
-        guess: str = input('\nYour guess is(1-4): ').strip()
+        guess: int = parse_input('Enter your guess (1-4):', 1, 4)
 
         if q.answers[guess] == q.correct_answer:
             total_points += q.points
@@ -99,11 +109,12 @@ def play_quiz(questions: list[Question]):
 
     play_again: str = input('Would you like to play again?(y/n) ').lower().strip()
 
-    if play_again == 'y':
+    if play_again[0] == 'y':
         questions.clear()
         parse_data(get_data(), questions)
         play_quiz(questions)
     else:
+        print('See you next time!')
         exit()
 
 
