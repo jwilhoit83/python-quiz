@@ -55,7 +55,7 @@ def get_data():
         print(f'{k}. {v.replace('_', ' ').title()}')
 
     category: str = categories[parse_input('\nChoose which category to play (1-10): ', 1, 10)]
-    limit: str = parse_input('How many questions would you like to play? (1-20): ', 1, 20)
+    limit: str = parse_input('\nHow many questions would you like to play? (1-20): ', 1, 20)
 
     url = f'https://the-trivia-api.com/v2/questions?limit={limit}&categories={category}'
 
@@ -86,7 +86,7 @@ def play_quiz(questions: list[Question]):
     possible_points: int = 0
 
     for q in questions:
-        print(q.question + '\n')
+        print('\n' + q.question + '\n')
 
         for k, v in q.answers.items():
             print(f'{k} - {v}')
@@ -95,26 +95,26 @@ def play_quiz(questions: list[Question]):
 
         if q.answers[guess] == q.correct_answer:
             total_points += q.points
-            Color.print_cyan(f'\nCorrect for {q.points} points!\n')
+            Color.print_cyan(f'\nCorrect for {q.points} points!')
         else:
-            Color.print_yellow(f'\nIncorrect, the right answer was {q.correct_answer}\n')
+            Color.print_yellow(f'\nIncorrect, the right answer was {q.correct_answer}')
 
         possible_points += q.points
         time.sleep(1)
 
     if total_points == possible_points:
-        Color.print_green(f'Perfect score {str(total_points)} out of {str(possible_points)} points!\n')
+        Color.print_green(f'\nPerfect score {str(total_points)} out of {str(possible_points)} points!')
     else:
-        Color.print_green(f'You scored a total of {str(total_points)} out of {str(possible_points)} points!\n')
+        Color.print_green(f'\nYou scored a total of {str(total_points)} out of {str(possible_points)} points!')
 
-    play_again: str = input('Would you like to play again?(y/n) ').lower().strip()
+    play_again: str = input('\nWould you like to play again?(y/n) ').lower().strip()
 
     if play_again[0] == 'y':
         questions.clear()
         parse_data(get_data(), questions)
         play_quiz(questions)
     else:
-        print('See you next time!')
+        print('\nSee you next time!')
         exit()
 
 
